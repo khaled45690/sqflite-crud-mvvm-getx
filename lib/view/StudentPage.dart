@@ -11,104 +11,104 @@ class StudentPage extends StatefulWidget {
 }
 
 class _StudentPageState extends State<StudentPage> {
-
   final studentViewModel = Get.put(StudentViewModel());
   final nameController = TextEditingController();
   int? studentId;
+  bool isEditing = false;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-          body: Obx(()=>Container(
+      body: Obx(() => Container(
             margin: EdgeInsets.all(16),
             child: Column(
               children: <Widget>[
-
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(
-                      hintText: 'Enter name'
-                  ),
+                  decoration: InputDecoration(hintText: 'Enter name'),
                 ),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-
                     ElevatedButton(
-                        onPressed: (){
-                          if(nameController.text != "")
-                            {
-                              studentViewModel.addStudent(StudentModel(
-                                id: null,
-                                name: nameController.text
-                              ));
-                              nameController.text = "";
-                            }
-                        },
-                        child: Text("Add")
+                        onPressed: isEditing ? cancelEditing  : add,
+                        child: isEditing ? const Text("cancel editing") : const Text("Add")),
+                    SizedBox(
+                      width: 16,
                     ),
-
-                    SizedBox(width: 16,),
-
                     ElevatedButton(
-                        onPressed: (){
-                          if(nameController.text != "")
-                          {
-                            studentViewModel.updateStudent(StudentModel(
-                                id: studentId,
-                                name: nameController.text
-                            ));
-                            nameController.text = "";
-                          }
-                        },
-                        child: Text("Update")
-                    )
-
+                        onPressed: isEditing
+                            ? () {
+                                if (nameController.text != "") {
+                                  studentViewModel.updateStudent(StudentModel(
+                                      id: studentId,
+                                      name: nameController.text));
+                                  nameController.text = "";
+                                  isEditing = false;
+                                  setState(() {});
+                                }
+                              }
+                            : null,
+                        child: Text("Update"))
                   ],
                 ),
-
                 Expanded(
                     child: ListView.builder(
                         itemCount: studentViewModel.allStudent.length,
-                        itemBuilder: (context,index)
-                        {
+                        itemBuilder: (context, index) {
                           return InkWell(
-                            onTap: (){
-                              studentId = studentViewModel.allStudent[index].id!;
-                              nameController.text = studentViewModel.allStudent[index].name!;
+                            onTap: () {
+                              studentId =
+                                  studentViewModel.allStudent[index].id!;
+                              nameController.text =
+                                  studentViewModel.allStudent[index].name!;
+                              isEditing = true;
+                              setState(() {});
                             },
                             child: Card(
                               child: Row(
                                 children: <Widget>[
-
                                   Expanded(
                                     child: Container(
                                       padding: EdgeInsets.all(16),
-                                      child: Text(studentViewModel.allStudent[index].name!),
+                                      child: Text(studentViewModel
+                                          .allStudent[index].name!),
                                     ),
                                   ),
-
                                   InkWell(
-                                    onTap:(){
-                                      studentViewModel.deleteStudent(studentViewModel.allStudent[index].id!);
-                                    },
-                                      child: Icon(Icons.close,color: Colors.red,size: 32,)
-                                  )
-
+                                      onTap: () {
+                                        studentViewModel.deleteStudent(
+                                            studentViewModel
+                                                .allStudent[index].id!);
+                                      },
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                        size: 32,
+                                      ))
                                 ],
                               ),
                             ),
                           );
-                        }
-                    )
-                )
-
+                        }))
               ],
             ),
           )),
-        )
-    );
+    ));
+  }
+
+
+  add(){
+    if (nameController.text != "") {
+      studentViewModel.addStudent(StudentModel(
+          id: null, name: nameController.text));
+      nameController.text = "";
+    }
+  }
+
+  cancelEditing(){
+    isEditing = false;
+    setState(() {});
   }
 }
